@@ -44,6 +44,29 @@ class MainPageUseCase(private val repo: MainRepository) {
         }.toObservable().subscribeOn(Schedulers.io())
     }
 
+    fun getCategories(viewState: MainPageViewState): Observable<MainPageViewState>{
+        return repo.getCategories().materialize().map {
+            it.value?.let {
+                return@map viewState.copy(
+                    categories = it.toMutableList(),
+                    loadingCategories = false
+                )
+            }
+            it.error?.let {
+                return@map viewState.copy(
+                    categories = mutableListOf(),
+                    loadingCategories = false,
+                    errorCats = it as Exception
+                )
+            }
+            return@map viewState.copy(
+                categories = mutableListOf(),
+                loadingCategories = false,
+                errorCats = null
+            )
+        }.toObservable().subscribeOn(Schedulers.io())
+    }
+
     fun getNextPage(viewState: MainPageViewState): Observable<MainPageViewState>{
         return repo.getPosts("search?max-results=${viewState.nextPage * MAX_POSTS}").materialize().map {
             it.value?.let {

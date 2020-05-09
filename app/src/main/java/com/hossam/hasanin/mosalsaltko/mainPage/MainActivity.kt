@@ -7,11 +7,9 @@ import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.hossam.hasanin.mosalsaltko.R
 import com.hossam.hasanin.mosalsaltko.externals.onEndReached
-import com.hossam.hasanin.mosalsaltko.externals.removeLastItem
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.Disposable
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : AppCompatActivity() {
@@ -21,11 +19,16 @@ class MainActivity : AppCompatActivity() {
 
     private val postsAdapter = PostsAdapter(goToAction = {post, transElments, getMore ->
         if (getMore){
-            g()
+            removeTheButton()
             viewModel.loadThePosts()
         }
     })
-    fun g(){
+
+    private val categoriesAdapter = CategoriesAdapter(action = {
+
+    })
+
+    fun removeTheButton(){
         val l = postsAdapter.currentList.toMutableList()
         l.removeAt(l.lastIndex)
         postsAdapter.submitList(l)
@@ -36,6 +39,8 @@ class MainActivity : AppCompatActivity() {
 
         var l = mutableListOf<PostWrapper>()
         re_posts.layoutManager = LinearLayoutManager(this)
+        categories.layoutManager = LinearLayoutManager(this , LinearLayoutManager.HORIZONTAL , false)
+
         disposable = viewModel._viewState.observeOn(AndroidSchedulers.mainThread())
             .subscribe {
                 // loading state
@@ -43,6 +48,12 @@ class MainActivity : AppCompatActivity() {
                     loading.visibility = View.VISIBLE
                 } else {
                     loading.visibility = View.GONE
+                }
+
+                if (it.loadingCategories){
+                    loading_cats.visibility = View.VISIBLE
+                } else {
+                    loading_cats.visibility = View.GONE
                 }
 
                 //refresh casr
@@ -54,6 +65,13 @@ class MainActivity : AppCompatActivity() {
                     tv_error_mess.text = it.error.localizedMessage
                 }else{
                     tv_error_mess.visibility = View.GONE
+                }
+
+                if (it.errorCats != null){
+                    cat_error_mess.visibility = View.VISIBLE
+                    cat_error_mess.text = it.errorCats.localizedMessage
+                } else {
+                    cat_error_mess.visibility = View.GONE
                 }
 
                 if (it.posts.isNotEmpty() && it.showPosts){
@@ -92,6 +110,7 @@ class MainActivity : AppCompatActivity() {
             }
 
         re_posts.adapter = postsAdapter
+        categories.adapter = categoriesAdapter
 
         swipe_refresh.setOnRefreshListener {
             viewModel.refreshing()

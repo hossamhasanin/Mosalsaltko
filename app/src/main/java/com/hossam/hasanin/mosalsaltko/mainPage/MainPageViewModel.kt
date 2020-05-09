@@ -10,7 +10,7 @@ import io.reactivex.rxjava3.subjects.PublishSubject
 
 class MainPageViewModel(val useCase: MainPageUseCase): ViewModel() {
     val _viewState = BehaviorSubject.create<MainPageViewState>().apply {
-        onNext(MainPageViewState(mutableListOf() , null , false , 1 , false , false , false , false , false))
+        onNext(MainPageViewState(mutableListOf() , mutableListOf() , null , false , 1 , false , false , false , false , false , false))
     }
 
     fun viewStateValue(): MainPageViewState = _viewState.value
@@ -20,14 +20,17 @@ class MainPageViewModel(val useCase: MainPageUseCase): ViewModel() {
     private val compositeDisposable = CompositeDisposable()
     private val _loadingFirstPage = PublishSubject.create<Unit>()
     private val _checkForMore = PublishSubject.create<Unit>()
+    private val _loadCats = PublishSubject.create<Unit>()
 
     init {
         bindUi()
         _loadingFirstPage.onNext(Unit)
+        _loadCats.onNext(Unit)
     }
 
     fun bindUi(){
         val dis = Observable.merge(
+            _loadCats(),
             _loadFirstPage(),
             _checkForMore())
             .doOnNext { postViewState(it) }
@@ -40,6 +43,9 @@ class MainPageViewModel(val useCase: MainPageUseCase): ViewModel() {
     }
     fun _checkForMore() : Observable<MainPageViewState>{
         return _checkForMore.switchMap { useCase.getNextPage(viewStateValue()) }
+    }
+    fun _loadCats() : Observable<MainPageViewState>{
+        return _loadCats.switchMap { useCase.getCategories(viewStateValue()) }
     }
 
     fun checkForMorePosts(){

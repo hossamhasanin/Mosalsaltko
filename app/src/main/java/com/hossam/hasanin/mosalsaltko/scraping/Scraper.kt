@@ -1,7 +1,7 @@
 package com.hossam.hasanin.mosalsaltko.scraping
 
-import android.util.Log
 import com.hossam.hasanin.mosalsaltko.externals.MAIN_PAGE
+import com.hossam.hasanin.mosalsaltko.models.Category
 import com.hossam.hasanin.mosalsaltko.models.Post
 import io.reactivex.rxjava3.core.Maybe
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -10,7 +10,6 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
 import java.lang.Exception
 
@@ -39,28 +38,31 @@ class Scraper {
         }.subscribeOn(Schedulers.io())
     }
 
-    fun getNextPage(url: String): Maybe<String>{
-        return Maybe.create<String> {
+    fun scrapCategories() : Maybe<List<Category>> {
+        return Maybe.create<List<Category>> {
             try {
                 CoroutineScope(IO).launch {
-                    val site: Document = Jsoup.connect(MAIN_PAGE + url)
+                    val site: Document = Jsoup.connect(MAIN_PAGE)
                         .userAgent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.21 (KHTML, like Gecko) Chrome/19.0.1042.0 Safari/535.21")
                         .get()
-                    val lastLink = site.select(".widget .pagenav a")
-
-                    Log.v("koko" , site.title())
-
-//                    val isnextExists: Boolean = lastLink.text() == "Next"
-//                    val nextPage: String = if (isnextExists) lastLink.attr("href") else ""
-//
-//                    it.onSuccess(nextPage)
+                    val liCats: Elements = site.select(".main-nav li")
+                    val cats = liCats.map {
+                        val base = it.select("a")
+                        val name = base.text()
+                        val link = base.attr("href")
+                        return@map Category(
+                            name = name,
+                            url = link
+                        )
+                    }
+                    it.onSuccess(cats)
                 }
-
             }catch (e: Exception){
-                e.fillInStackTrace()
                 it.onError(e)
             }
-        }
+        }.subscribeOn(Schedulers.io())
     }
+
+
 
 }
