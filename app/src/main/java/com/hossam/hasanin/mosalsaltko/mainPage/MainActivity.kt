@@ -81,6 +81,11 @@ class MainActivity : AppCompatActivity() {
                     loading.visibility = View.GONE
                 }
 
+                if (it.categories.isNotEmpty()){
+                    categoriesAdapter.submitList(it.categories)
+                    loading_cats.visibility = View.GONE
+                }
+
                 if (!it.loadingMore){
                     if (l.size > 0){
                         if (l[l.lastIndex].type == PostWrapper.LOADING){
