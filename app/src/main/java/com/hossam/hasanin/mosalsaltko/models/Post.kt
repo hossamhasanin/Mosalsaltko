@@ -6,8 +6,8 @@ import kotlinx.android.parcel.Parcelize
 
 @Parcelize
 data class Post(
-    val name: String = "",
-    val img: String = "",
+    var name: String = "",
+    var img: String = "",
     val url: String = "",
     val description: String? = ""
 ): Parcelable{

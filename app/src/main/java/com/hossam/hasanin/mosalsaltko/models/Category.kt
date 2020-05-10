@@ -3,8 +3,8 @@ package com.hossam.hasanin.mosalsaltko.models
 import androidx.recyclerview.widget.DiffUtil
 
 data class Category(
-    val name: String,
-    val url: String
+    val name: String?,
+    var url: String
 ){
     companion object{
         val diffUtil = object : DiffUtil.ItemCallback<Category>() {

@@ -10,7 +10,7 @@ import io.reactivex.rxjava3.subjects.PublishSubject
 
 class MainPageViewModel(val useCase: MainPageUseCase): ViewModel() {
     val _viewState = BehaviorSubject.create<MainPageViewState>().apply {
-        onNext(MainPageViewState(mutableListOf() , mutableListOf() , null , false , 1 , false , false , false , false , false , false))
+        onNext(MainPageViewState(mutableListOf() , mutableListOf() , "" , null , null , false , 1 , true , false , false , false , false , false))
     }
 
     fun viewStateValue(): MainPageViewState = _viewState.value
@@ -60,6 +60,11 @@ class MainPageViewModel(val useCase: MainPageUseCase): ViewModel() {
             )
             _checkForMore.onNext(Unit)
         }
+    }
+
+    fun showCategory(url: String){
+        postViewState(viewStateValue().copy(searchUrl = url , loading = true))
+        _loadingFirstPage.onNext(Unit)
     }
 
     fun loadThePosts(){

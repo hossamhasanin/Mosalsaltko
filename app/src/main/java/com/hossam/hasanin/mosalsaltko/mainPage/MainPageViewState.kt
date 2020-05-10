@@ -6,6 +6,7 @@ import java.lang.Exception
 data class MainPageViewState(
     val posts: MutableList<PostWrapper>,
     val categories: MutableList<Category>,
+    val searchUrl: String,
     val error: Exception?,
     val errorCats: Exception?,
     val complete: Boolean,

@@ -9,8 +9,11 @@ import java.lang.Exception
 
 class MainPageUseCase(private val repo: MainRepository) {
     fun loadingFirstPage(viewState: MainPageViewState): Observable<MainPageViewState>{
-        return repo.getPosts("search?max-results=12").materialize().map {
+        val url = if (viewState.searchUrl.isNotEmpty()) viewState.searchUrl else "/search?max-results=${MAX_POSTS}"
+        Log.v("search" , url)
+        return repo.getPosts(url).materialize().map {
             it.value?.let {
+                Log.v("search" , it.toString())
                 return@map viewState.copy(
                     posts = it.map { PostWrapper(it , PostWrapper.CONTENT) }.toMutableList(),
                     error = null,
@@ -18,7 +21,8 @@ class MainPageUseCase(private val repo: MainRepository) {
                     nextPage = 2,
                     showPosts = true,
                     refresh = false,
-                    showGetMore = false
+                    showGetMore = false,
+                    loading = false
                 )
             }
             it.error?.let {
@@ -29,7 +33,8 @@ class MainPageUseCase(private val repo: MainRepository) {
                     nextPage = 1,
                     showPosts = true,
                     refresh = false,
-                    showGetMore = false
+                    showGetMore = false,
+                    loading = false
                 )
             }
             return@map viewState.copy(
@@ -39,7 +44,8 @@ class MainPageUseCase(private val repo: MainRepository) {
                 nextPage = 1,
                 showPosts = true,
                 refresh = false,
-                showGetMore = false
+                showGetMore = false,
+                loading = false
             )
         }.toObservable().subscribeOn(Schedulers.io())
     }
@@ -68,7 +74,9 @@ class MainPageUseCase(private val repo: MainRepository) {
     }
 
     fun getNextPage(viewState: MainPageViewState): Observable<MainPageViewState>{
-        return repo.getPosts("search?max-results=${viewState.nextPage * MAX_POSTS}").materialize().map {
+        val url = if (viewState.searchUrl.isNotEmpty()) viewState.searchUrl + "?max-results=${viewState.nextPage * MAX_POSTS}" else "/search?max-results=${viewState.nextPage * MAX_POSTS}"
+
+        return repo.getPosts(url).materialize().map {
             it.value?.let {
                 val l = it.map { PostWrapper(it , PostWrapper.CONTENT) }.toMutableList()
                 Log.v("koko" , "got more ${it.size}")

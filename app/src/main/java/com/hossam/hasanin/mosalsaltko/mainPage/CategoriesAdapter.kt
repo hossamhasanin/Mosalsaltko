@@ -1,5 +1,6 @@
 package com.hossam.hasanin.mosalsaltko.mainPage
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,13 +10,15 @@ import com.hossam.hasanin.mosalsaltko.R
 import com.hossam.hasanin.mosalsaltko.models.Category
 import kotlinx.android.synthetic.main.category_item.view.*
 
-class CategoriesAdapter(val action: (String) -> Unit) : ListAdapter<Category, CategoriesAdapter.ViewHolder>(
+class CategoriesAdapter(val action: (String , Int) -> Unit) : ListAdapter<Category, CategoriesAdapter.ViewHolder>(
     Category.diffUtil) {
+
+    var selected = 0
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
             LayoutInflater.from(parent.context).inflate(
-                R.layout.more_button,
+                R.layout.category_item,
                 parent,
                 false
             )
@@ -23,16 +26,28 @@ class CategoriesAdapter(val action: (String) -> Unit) : ListAdapter<Category, Ca
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.onBind(getItem(position) , action)
+        holder.onBind(position , getItem(position) , action , selected)
+    }
+
+    fun submitSelected(select: Int){
+        selected = select
+        notifyDataSetChanged()
     }
 
 
     class ViewHolder(val item: View) : RecyclerView.ViewHolder(item){
         private val name = item.cat
-        fun onBind(data: Category, action: (String) -> Unit){
+        fun onBind(position: Int, data: Category, action: (String , Int) -> Unit , selected: Int){
+
+            if (selected == position){
+                name.setTextColor(Color.BLUE)
+            } else {
+                name.setTextColor(Color.BLACK)
+            }
+
             name.text = data.name
             name.setOnClickListener {
-                action(data.url)
+                action(data.url , position)
             }
         }
     }

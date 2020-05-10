@@ -17,6 +17,8 @@ class MainActivity : AppCompatActivity() {
     private val viewModel: MainPageViewModel by viewModel()
     private lateinit var disposable: Disposable
 
+    //private var selectedCat = 0
+
     private val postsAdapter = PostsAdapter(goToAction = {post, transElments, getMore ->
         if (getMore){
             removeTheButton()
@@ -24,8 +26,9 @@ class MainActivity : AppCompatActivity() {
         }
     })
 
-    private val categoriesAdapter = CategoriesAdapter(action = {
-
+    private val categoriesAdapter = CategoriesAdapter(action = { url , select ->
+        viewModel.showCategory(url)
+        setS(select)
     })
 
     fun removeTheButton(){
@@ -33,6 +36,11 @@ class MainActivity : AppCompatActivity() {
         l.removeAt(l.lastIndex)
         postsAdapter.submitList(l)
     }
+
+    fun setS(s: Int){
+        categoriesAdapter.submitSelected(s)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -40,6 +48,8 @@ class MainActivity : AppCompatActivity() {
         var l = mutableListOf<PostWrapper>()
         re_posts.layoutManager = LinearLayoutManager(this)
         categories.layoutManager = LinearLayoutManager(this , LinearLayoutManager.HORIZONTAL , false)
+
+        //categoriesAdapter.submitSelected(selectedCat)
 
         disposable = viewModel._viewState.observeOn(AndroidSchedulers.mainThread())
             .subscribe {
@@ -82,6 +92,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 if (it.categories.isNotEmpty()){
+                    Log.v("koko" , "cats ${it.categories}")
                     categoriesAdapter.submitList(it.categories)
                     loading_cats.visibility = View.GONE
                 }
