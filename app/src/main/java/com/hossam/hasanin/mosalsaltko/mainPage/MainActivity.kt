@@ -7,8 +7,8 @@ import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.hossam.hasanin.mosalsaltko.R
 import com.hossam.hasanin.mosalsaltko.externals.onEndReached
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.activity_main.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -69,20 +69,20 @@ class MainActivity : AppCompatActivity() {
                 //refresh casr
                 if (!it.refresh) swipe_refresh.isRefreshing = false
 
-                // the error case
-                if (it.error != null) {
-                    tv_error_mess.visibility = View.VISIBLE
-                    tv_error_mess.text = it.error.localizedMessage
-                }else{
-                    tv_error_mess.visibility = View.GONE
-                }
-
-                if (it.errorCats != null){
-                    cat_error_mess.visibility = View.VISIBLE
-                    cat_error_mess.text = it.errorCats.localizedMessage
-                } else {
-                    cat_error_mess.visibility = View.GONE
-                }
+//                // the error case
+//                if (it.error != null) {
+//                    tv_error_mess.visibility = View.VISIBLE
+//                    tv_error_mess.text = it.error.localizedMessage
+//                }else{
+//                    tv_error_mess.visibility = View.GONE
+//                }
+//
+//                if (it.errorCats != null){
+//                    cat_error_mess.visibility = View.VISIBLE
+//                    cat_error_mess.text = it.errorCats.localizedMessage
+//                } else {
+//                    cat_error_mess.visibility = View.GONE
+//                }
 
                 if (it.posts.isNotEmpty() && it.showPosts){
                     Log.v("koko" , "${it.posts.size}")

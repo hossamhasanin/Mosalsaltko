@@ -10,6 +10,7 @@ data class MainPageViewState(
     val error: Exception?,
     val errorCats: Exception?,
     val complete: Boolean,
+    val loadCash: Boolean,
     val nextPage: Int,
     val loading: Boolean,
     val loadingCategories: Boolean,

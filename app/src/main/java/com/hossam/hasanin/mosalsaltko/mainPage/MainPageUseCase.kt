@@ -3,9 +3,10 @@ package com.hossam.hasanin.mosalsaltko.mainPage
 import android.util.Log
 import com.hossam.hasanin.mosalsaltko.externals.MAX_POSTS
 import com.hossam.hasanin.mosalsaltko.repositories.MainRepository
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.schedulers.Schedulers
+import io.reactivex.Observable
+import io.reactivex.schedulers.Schedulers
 import java.lang.Exception
+import java.net.SocketTimeoutException
 
 class MainPageUseCase(private val repo: MainRepository) {
     fun loadingFirstPage(viewState: MainPageViewState): Observable<MainPageViewState>{
@@ -22,14 +23,17 @@ class MainPageUseCase(private val repo: MainRepository) {
                     showPosts = true,
                     refresh = false,
                     showGetMore = false,
-                    loading = false
+                    loading = false,
+                    loadCash = false
                 )
             }
             it.error?.let {
+                val e = it as Exception
                 return@map viewState.copy(
                     posts = mutableListOf(),
-                    error = it as Exception,
+                    error = e,
                     complete = false,
+                    loadCash = true,
                     nextPage = 1,
                     showPosts = true,
                     refresh = false,
@@ -41,6 +45,7 @@ class MainPageUseCase(private val repo: MainRepository) {
                 posts = mutableListOf(),
                 error = null,
                 complete = false,
+                loadCash = false,
                 nextPage = 1,
                 showPosts = true,
                 refresh = false,
@@ -50,12 +55,93 @@ class MainPageUseCase(private val repo: MainRepository) {
         }.toObservable().subscribeOn(Schedulers.io())
     }
 
+    fun loadOrSavePostsToCash(viewState: MainPageViewState): Observable<MainPageViewState>{
+        return if (viewState.loadCash){
+            repo.getCashedPosts().materialize().map {
+                it.value?.let {
+                    return@map viewState.copy(
+                        posts = it.map { PostWrapper(it , PostWrapper.CONTENT) }.toMutableList(),
+                        showPosts = true,
+                        loading = false,
+                        loadCash = true,
+                        showGetMore = false,
+                        refresh = false
+                    )
+                }
+                it.error?.let {
+                    return@map viewState.copy(
+                        posts = mutableListOf(),
+                        error = it as Exception,
+                        complete = false,
+                        loadCash = false,
+                        nextPage = 1,
+                        showPosts = true,
+                        refresh = false,
+                        showGetMore = false,
+                        loading = false
+                    )
+                }
+                return@map viewState.copy(
+                    posts = mutableListOf(),
+                    error = null,
+                    complete = false,
+                    loadCash = false,
+                    nextPage = 1,
+                    showPosts = true,
+                    refresh = false,
+                    showGetMore = false,
+                    loading = false
+                )
+            }.toObservable().subscribeOn(Schedulers.io())
+        } else {
+            Log.v("koko" , "here")
+
+            repo.addPostsToCash(viewState.posts.map { it.post!! }).materialize<Unit>().map {
+                Log.v("koko" , viewState.toString())
+                return@map viewState.copy(loading = false)
+            }.toObservable().subscribeOn(Schedulers.io())
+        }
+    }
+
+    fun loadOrSaveCatsToCash(viewState: MainPageViewState): Observable<MainPageViewState>{
+        return if (viewState.errorCats == null){
+            repo.addCatsToCash(viewState.categories).materialize<Unit>().map {
+                return@map viewState
+            }.toObservable().subscribeOn(Schedulers.io())
+        } else {
+            repo.getCashedCats().materialize().map {
+                it.value?.let {
+                    Log.v("koko" , it.toString())
+                    Log.v("koko" , viewState.toString())
+                    return@map viewState.copy(
+                        categories = it.toMutableList(),
+                        loadingCategories = false,
+                        errorCats = null
+                    )
+                }
+                it.error?.let {
+                    return@map viewState.copy(
+                        categories = mutableListOf(),
+                        loadingCategories = false,
+                        errorCats = it as Exception
+                    )
+                }
+                return@map viewState.copy(
+                    categories = mutableListOf(),
+                    loadingCategories = false,
+                    errorCats = null
+                )
+            }.toObservable().subscribeOn(Schedulers.io())
+        }
+    }
+
     fun getCategories(viewState: MainPageViewState): Observable<MainPageViewState>{
         return repo.getCategories().materialize().map {
             it.value?.let {
                 return@map viewState.copy(
                     categories = it.toMutableList(),
-                    loadingCategories = false
+                    loadingCategories = false,
+                    errorCats = null
                 )
             }
             it.error?.let {

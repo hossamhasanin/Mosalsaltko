@@ -1,9 +1,13 @@
 package com.hossam.hasanin.mosalsaltko.models
 
 import androidx.recyclerview.widget.DiffUtil
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
+@Entity(tableName = "cats")
 data class Category(
     val name: String?,
+    @PrimaryKey
     var url: String
 ){
     companion object{
